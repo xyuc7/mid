@@ -1,0 +1,134 @@
+USE [Northwind]
+
+--1 列出各產品的供應商名稱
+
+select p.ProductName,s.CompanyName from Products p
+ inner join Suppliers s
+on s.SupplierID = p.SupplierID
+
+
+--2 列出各產品的種類名稱
+
+Select  p.ProductName, c.CategoryName From Products p
+inner join Categories c
+On p.CategoryID = c.CategoryID
+
+
+--3 列出各訂單的顧客名字
+Select o.OrderID , c.ContactName From Orders o
+inner join Customers c
+On c.CustomerID = o.CustomerID
+
+--4 列出各訂單的所負責的物流商名字以及員工名字
+Select o.OrderID,s.CompanyName , e.FirstName, e.LastName From Orders o
+inner join Shippers s
+On o.ShipVia = s.ShipperID
+inner join  Employees e
+On o.EmployeeID = e.EmployeeID 
+
+--5 列出1998年的訂單
+Select * From Orders o
+Where YEAR(o.OrderDate) = 1998
+
+--6 各產品，UnitsInStock < UnitsOnOrder 顯示'供不應求'，否則顯示'正常'
+
+Select p.ProductID,p.ProductName,
+Case
+When p.UnitsInStock < p.UnitsOnOrder  
+Then '供不應求'
+Else '正常'
+End AS StockStatu
+From Products p
+
+
+--7 取得訂單日期最新的9筆訂單
+
+Select Top 9 * From Orders o
+Order By o.OrderDate Desc
+
+--8 產品單價最便宜的第4~8名
+
+Select *  From Products p
+Order By p.UnitPrice asc
+Offset 3 Rows Fetch Next 5 Rows Only
+
+--9 列出每種類別中最高單價的商品
+
+Select c.CategoryID,c.CategoryName, p.ProductName From Categories c
+Inner Join Products p
+On c.CategoryID = p.CategoryID
+Where p.UnitPrice =
+Max(p.UnitPrice) 
+
+
+
+select p.CategoryID,p.UnitPrice from Products p
+order by p.UnitPrice desc
+
+select c.CategoryID,max(p.UnitPrice) as pp from Products p 
+inner join Categories c
+on c.CategoryID=p.CategoryID
+group by c.CategoryID
+
+select * from Products p 
+inner join Categories c
+on c.CategoryID=p.CategoryID
+Order by c.CategoryID
+
+
+
+
+
+
+
+
+
+
+
+
+--10 列出每個訂單的總金額
+Select od.OrderID ,SUM((od.UnitPrice*od.Quantity)*(1-od.Discount)) As TotalAmount
+From [Order Details] od
+Group By od.OrderID
+
+--11 列出每個物流商送過的訂單筆數
+Select s.CompanyName ,o.ShipVia , Count(o.OrderID) As QtyforOrder  From Orders o
+Inner Join Shippers s
+On o.ShipVia = s.ShipperID
+Group By o.ShipVia , s.CompanyName
+
+--12 列出被下訂次數小於9次的產品
+
+Select p.ProductName , od.Quantity From [Order Details] od
+Inner Join Products p
+On p.ProductID = od.ProductID
+Where od.Quantity < 9
+
+-- (13、14、15請一起寫)
+--13 新增物流商(Shippers)：
+-- 公司名稱: 青杉人才，電話: (02)66057606
+-- 公司名稱: 青群科技，電話: (02)14055374
+SET IDENTITY_INSERT Shippers ON;
+Insert Into Shippers(ShipperID,CompanyName,Phone)
+Values (12,'青杉人才','(02)66057606'),
+	   (13,'青群科技','(02)14055374')
+
+--14 方才新增的兩筆資料，電話都改成(02)66057606，公司名稱結尾加'有限公司'
+--Update Shippers
+--Set Phone = '(02)66057606',CompanyName= CompanyName+'有限公司'
+--Where ShipperID = 12
+--Update Shippers
+--Set Phone = '(02)66057606',CompanyName= CompanyName+'有限公司'
+--Where ShipperID = 13
+Update Shippers
+Set Phone = '(02)66057606',CompanyName= CompanyName+'有限公司'
+Where ShipperID In (12,13)
+
+--15 刪除剛才兩筆資料
+
+Delete Shippers
+Where ShipperID In (12,13)
+
+
+
+
